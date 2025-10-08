@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ఆర్డర్ వివరములు</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #4B5D67;
+      font-size: 1.4rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    th {
+      background-color: #4B5D67;
+      color: white;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #f0f6f8;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 6px;
+      text-align: center;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #productNameTD {
+      text-align: left;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding-left: 5px;
+    }
+
+    .buttons {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    button {
+      background-color: #4B5D67;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #1c7fa5;
+    }
+
+    #totalDisplay {
+      text-align: right;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #4B5D67;
+      background: #e9f5f8;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 600px) {
+      th, td {
+        padding: 8px 4px;
+        font-size: 0.9rem;
+      }
+      input[type="number"] {
+        width: 60px;
+      }
+      button {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+      }
+      #totalDisplay {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>ఆర్డర్ వివరములు</h1>
+
+  <table id="productTable">
+    <thead>
+      <tr>
+        <th>Particulars</th>
+        <th>Qty @ KGs</th>
+        <th>Rate</th>
+        <th>AMOUNT</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="totalDisplay">Total: 0/-</div>
+
+  <div class="buttons">
+    <button onclick="generateJSON()">Copy</button>
+    <button onclick="clearAll()">Clear</button>
+  </div>
+
+  <script>
+    const products = [
+      {"ProductNum":"P001","ProductName":"కారం","Unit":1,"BasePricePerUnit":170},
+      {"ProductNum":"P002","ProductName":"ధనియాల పొడి","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P003","ProductName":"పసుపు","Unit":1,"BasePricePerUnit":180},
+      {"ProductNum":"P004","ProductName":"గరంమసాలా","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P005","ProductName":"చికెన్ మసాలా","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P006","ProductName":"సాంబార్ పొడి","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P007","ProductName":"పులిహోర పొడి","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P008","ProductName":"కొబ్బరి నల్లచిప్పలు","Unit":1,"BasePricePerUnit":180},
+      {"ProductNum":"P009","ProductName":"కొబ్బరి కారం","Unit":1,"BasePricePerUnit":200},
+      {"ProductNum":"P010","ProductName":"కొబ్బరి తురుము","Unit":1,"BasePricePerUnit":170},
+      {"ProductNum":"P011","ProductName":"అప్పడాలు","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P012","ProductName":"ఇడ్లికారం","Unit":1,"BasePricePerUnit":150},
+      {"ProductNum":"P013","ProductName":"పచ్చళ్ళు","Unit":1,"BasePricePerUnit":85},
+      {"ProductNum":"P014","ProductName":"మినపగుళ్ళు","Unit":1,"BasePricePerUnit":100},
+      {"ProductNum":"P015","ProductName":"ఇడ్లి రవ్వ","Unit":1,"BasePricePerUnit":100}
+    ];
+
+    const tbody = document.querySelector('#productTable tbody');
+
+    products.forEach((product, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td id="productNameTD">${product.ProductName}</td>
+        <td><input type="number" min="0" value="" onchange="updateAmount(${index})" id="qty-${index}"></td>
+        <td><input type="number" min="0" value="${product.BasePricePerUnit}" onchange="updateAmount(${index})" id="price-${index}"></td>
+        <td id="amount-${index}">0</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    function updateAmount(index) {
+      const qty = parseFloat(document.getElementById(`qty-${index}`).value) || 0;
+      const price = parseFloat(document.getElementById(`price-${index}`).value) || 0;
+      const amount = qty * price;
+      document.getElementById(`amount-${index}`).textContent = amount;
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      let total = 0;
+      products.forEach((_, index) => {
+        total += parseFloat(document.getElementById(`amount-${index}`).textContent) || 0;
+      });
+      document.getElementById('totalDisplay').textContent = `Total: ${total.toLocaleString('en-IN')}/-`;
+    }
+
+    function generateJSON() {
+      const selectedProducts = [];
+      products.forEach((p, index) => {
+        const qty = parseFloat(document.getElementById(`qty-${index}`).value) || 0;
+        const price = parseFloat(document.getElementById(`price-${index}`).value) || 0;
+        if (qty > 0) {
+          selectedProducts.push({
+            ProductNum: p.ProductNum,
+            ProductName: p.ProductName,
+            Quantity: qty,
+            Price: price,
+            Amount: qty * price
+          });
+        }
+      });
+
+      const jsonOutput = JSON.stringify(selectedProducts, null, 2);
+      navigator.clipboard.writeText(jsonOutput).then(() => {
+        alert('ఆర్డర్ వివరములు కాపీ చెయ్యబడ్డాయి!!');
+      });
+      clearAll();
+    }
+
+    function clearAll() {
+      products.forEach((_, index) => {
+        document.getElementById(`qty-${index}`).value = '';
+        document.getElementById(`price-${index}`).value = products[index].BasePricePerUnit;
+        document.getElementById(`amount-${index}`).textContent = '0';
+      });
+      calculateTotal();
+    }
+  </script>
+</body>
+</html>
